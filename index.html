@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YARO - Yard Reservations</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header>
+    <h1>YARO — Yard Reservations (Westgate Oxford - North Service Yard)</h1>
+  </header>
+
+  <div class="container">
+    <!-- Vyhledávací panel -->
+    <div class="controls">
+      <input type="text" id="contractorName" placeholder="Contractor Name" />
+      <input type="text" id="bayNumber" placeholder="Bay Number" />
+      <input type="text" id="contact" placeholder="Contact" />
+      <input type="text" id="purpose" placeholder="Purpose" />
+      <input type="date" id="fromDate" />
+      <input type="date" id="toDate" />
+      <button id="searchButton">Search</button>
+    </div>
+
+    <!-- Mapa BAYs -->
+    <div class="map">
+      <div class="bay free" data-status="free">1</div>
+      <div class="bay reserved" data-status="reserved">2</div>
+      <div class="bay occupied" data-status="occupied">3</div>
+      <div class="bay free" data-status="free">4</div>
+      <div class="bay reserved" data-status="reserved">5</div>
+      <div class="bay occupied" data-status="occupied">6</div>
+      <div class="bay free" data-status="free">7</div>
+      <div class="bay free" data-status="free">8</div>
+    </div>
+
+    <!-- Výsledky hledání -->
+    <table>
+      <thead>
+        <tr>
+          <th>BAY</th>
+          <th>Name</th>
+          <th>Contact</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Purpose</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="resultTableBody">
+        <!-- Dynamicky generovaný obsah -->
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    &copy; 2025 YARO System
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Importy Firebase (ES module verze)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function fetchReservations() {
+      const querySnapshot = await getDocs(collection(db, "reservations"));
+      const table = document.getElementById("resultTableBody");
+      table.innerHTML = "";
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const row = document.createElement("tr");
+        row.classList.add(data.status); // barva řádku
+
+        row.innerHTML = `
+          <td>${data.bay}</td>
+          <td>${data.name}</td>
+          <td>${data.contact}</td>
+          <td>${data.from}</td>
+          <td>${data.to}</td>
+          <td>${data.purpose}</td>
+          <td>${data.notes || ""}</td>
+        `;
+
+        table.appendChild(row);
+      });
+    }
+
+    document.getElementById("searchButton").addEventListener("click", fetchReservations);
+    window.onload = fetchReservations;
+  </script>
+</body>
+</html>
